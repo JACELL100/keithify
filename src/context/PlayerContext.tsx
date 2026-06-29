@@ -39,18 +39,25 @@ const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 // Cache for fetched stream URLs
 const streamUrlCache = new Map<string, string>();
 
-async function fetchStreamUrl(trackId: string): Promise<string | null> {
-  // Check cache first
-  if (streamUrlCache.has(trackId)) {
-    return streamUrlCache.get(trackId)!;
+async function fetchStreamUrl(track: Track): Promise<string | null> {
+  // Jamendo returns a full-length streaming URL directly on the track,
+  // so use it immediately and avoid an extra network round-trip.
+  if (track.preview) {
+    streamUrlCache.set(track.id, track.preview);
+    return track.preview;
+  }
+
+  // Check cache next
+  if (streamUrlCache.has(track.id)) {
+    return streamUrlCache.get(track.id)!;
   }
 
   try {
-    const res = await fetch(`/api/stream?id=${encodeURIComponent(trackId)}`);
+    const res = await fetch(`/api/stream?id=${encodeURIComponent(track.id)}`);
     const data = await res.json();
 
     if (data.url) {
-      streamUrlCache.set(trackId, data.url);
+      streamUrlCache.set(track.id, data.url);
       return data.url;
     }
     return null;
@@ -59,6 +66,7 @@ async function fetchStreamUrl(trackId: string): Promise<string | null> {
     return null;
   }
 }
+
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -120,7 +128,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           const nextTrack = prev.queue[nextIndex];
 
           // Fetch stream URL for next track
-          fetchStreamUrl(nextTrack.id).then((url) => {
+          fetchStreamUrl(nextTrack).then((url) => {
+
             if (url) {
               audio.src = url;
               audio.play().catch(() => {});
@@ -198,7 +207,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       }));
 
       // Fetch the stream URL
-      const streamUrl = await fetchStreamUrl(track.id);
+      const streamUrl = await fetchStreamUrl(track);
+
 
       if (streamUrl) {
         // Check if it's an HLS stream
@@ -257,7 +267,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       isLoading: true,
     }));
 
-    const streamUrl = await fetchStreamUrl(track.id);
+    const streamUrl = await fetchStreamUrl(track);
     if (streamUrl) {
       audio.src = streamUrl;
       audio.volume = state.volume;
@@ -272,6 +282,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [state.queue, state.currentIndex, state.volume]);
 
   const prevTrack = useCallback(async () => {
+
     const audio = audioRef.current;
     if (!audio || state.queue.length === 0) return;
 
@@ -289,7 +300,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       isLoading: true,
     }));
 
-    const streamUrl = await fetchStreamUrl(track.id);
+    const streamUrl = await fetchStreamUrl(track);
+
     if (streamUrl) {
       audio.src = streamUrl;
       audio.volume = state.volume;

@@ -21,9 +21,15 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "musicapi.x007.workers.dev",
+        hostname: "usercontent.jamendo.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "**.jamendo.com",
+        pathname: "/**",
+      },
+
       {
         protocol: "https",
         hostname: "**",

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-const MUSIC_API_BASE = "https://musicapi.x007.workers.dev";
+import { jamendoUrl, JamendoTrack } from "@/lib/jamendo";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -14,20 +13,26 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(
-      `${MUSIC_API_BASE}/fetch?id=${encodeURIComponent(id)}`,
-      { signal: AbortSignal.timeout(15000) }
-    );
+    // Look up the track by id and return its full-length streaming URL.
+    const url = jamendoUrl("tracks", {
+      id,
+      audioformat: "mp32",
+    });
+
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(15000),
+    });
 
     if (!response.ok) {
-      throw new Error(`Fetch failed with status ${response.status}`);
+      throw new Error(`Jamendo request failed with status ${response.status}`);
     }
 
     const data = await response.json();
+    const track: JamendoTrack | undefined = data?.results?.[0];
 
-    if (data.status === 200 && data.response) {
+    if (data?.headers?.status === "success" && track?.audio) {
       return NextResponse.json({
-        url: data.response,
+        url: track.audio,
         message: "success",
       });
     }

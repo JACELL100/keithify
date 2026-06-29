@@ -25,20 +25,5 @@ export interface Artist {
   picture_medium: string;
 }
 
-export interface MusicApiSearchResult {
-  id: string;
-  title: string;
-  img: string;
-}
 
-export interface MusicApiSearchResponse {
-  status: number;
-  response: MusicApiSearchResult[];
-  message: string;
-}
 
-export interface MusicApiFetchResponse {
-  status: number;
-  response: string;
-  message: string;
-}
