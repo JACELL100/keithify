@@ -164,7 +164,13 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     };
 
     const handleError = () => {
-      console.error("Audio playback error");
+      const mediaError = audio.error;
+      console.error(
+        "Audio playback error",
+        mediaError
+          ? { code: mediaError.code, message: mediaError.message, src: audio.currentSrc }
+          : { src: audio.currentSrc }
+      );
       setState((prev) => ({
         ...prev,
         isLoading: false,
@@ -362,7 +368,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         audioRef,
       }}
     >
-      <audio ref={audioRef} preload="auto" crossOrigin="anonymous" />
+      <audio ref={audioRef} preload="auto" />
       {children}
     </PlayerContext.Provider>
   );
