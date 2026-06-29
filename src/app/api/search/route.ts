@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jamendoUrl, mapJamendoTrack, JamendoTrack } from "@/lib/jamendo";
+import {
+  jamendoUrl,
+  mapJamendoTrack,
+  filterPlayableTracks,
+  JamendoTrack,
+} from "@/lib/jamendo";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -33,7 +38,9 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
 
     if (data?.headers?.status === "success" && Array.isArray(data.results)) {
-      const tracks = (data.results as JamendoTrack[]).map(mapJamendoTrack);
+      const tracks = filterPlayableTracks(
+        (data.results as JamendoTrack[]).map(mapJamendoTrack)
+      );
       return NextResponse.json({ data: tracks, engine: "jamendo" });
     }
 

@@ -19,6 +19,18 @@ export interface JamendoTrack {
   audiodownload: string;
 }
 
+// Some Jamendo entries are not real, playable tracks (e.g. a playlist/compilation
+// name surfaced as a single track). Clicking them produces a stream error, so we
+// exclude them by id.
+const BLOCKED_TRACK_IDS = new Set<string>(["2034080"]);
+
+// Filter out entries that aren't playable individual tracks.
+export function filterPlayableTracks(tracks: Track[]): Track[] {
+  return tracks.filter(
+    (track) => !!track.preview && !BLOCKED_TRACK_IDS.has(track.id)
+  );
+}
+
 // Build a Jamendo API URL with the client_id and shared defaults applied.
 export function jamendoUrl(
   path: string,

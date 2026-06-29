@@ -4,6 +4,7 @@ import { PlayerProvider, usePlayer } from "@/context/PlayerContext";
 import Sidebar from "@/components/Sidebar";
 import Player from "@/components/Player";
 import MobileNav from "@/components/MobileNav";
+import MobileHeader from "@/components/MobileHeader";
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { currentTrack } = usePlayer();
@@ -21,6 +22,8 @@ function AppContent({ children }: { children: React.ReactNode }) {
             hasTrack ? "pb-[160px] md:pb-[80px]" : "pb-[60px] md:pb-0"
           }`}
         >
+          {/* Mobile top header with logo */}
+          <MobileHeader />
           {children}
         </main>
       </div>
